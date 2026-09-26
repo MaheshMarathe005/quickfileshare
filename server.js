@@ -4,7 +4,7 @@
 import http from 'node:http';
 import fsp from 'node:fs/promises';
 import path from 'node:path';
-import { config, assertConfig, ROOT_DIR } from './lib/config.js';
+import { config, assertConfig, ROOT_DIR, IS_SERVERLESS } from './lib/config.js';
 import { getStore } from './lib/store/index.js';
 import { getStorage } from './lib/storage/index.js';
 import * as handlers from './lib/handlers.js';
@@ -116,4 +116,13 @@ async function main() {
   });
 }
 
-main().catch((e) => { console.error('Failed to start:', e); process.exit(1); });
+// On Vercel/Lambda this file must never run: the app is served by the static
+// public/ assets + the functions in api/. Starting a listener there (and the
+// file store's mkdir of a read-only path) is exactly what caused the
+// "ENOENT: mkdir '/var/task/data'" crash. Guard so importing/bundling is inert.
+if (IS_SERVERLESS) {
+  console.warn('[server] Serverless environment detected — not starting a persistent listener. ' +
+    'Requests are handled by the functions in api/. Ensure STORE_BACKEND=redis and STORAGE_BACKEND=gdrive.');
+} else {
+  main().catch((e) => { console.error('Failed to start:', e); process.exit(1); });
+}
