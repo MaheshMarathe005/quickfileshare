@@ -8,9 +8,25 @@ function humanSize(b) {
   return `${n.toFixed(n < 10 && i > 0 ? 1 : 0)} ${u[i]}`;
 }
 
+// Fetch + parse JSON, but degrade gracefully when the server returns non-JSON
+// (e.g. a platform/proxy error page like "The deployment could not be found."),
+// so the user sees the real message instead of a cryptic JSON.parse error.
+async function fetchJson(url, opts) {
+  const res = await fetch(url, opts);
+  const raw = await res.text();
+  let data, parsed = true;
+  try { data = raw ? JSON.parse(raw) : {}; } catch { parsed = false; }
+  if (!parsed) {
+    const snippet = raw.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 160);
+    throw new Error(snippet ? `Server: ${snippet}` : `Unexpected response (HTTP ${res.status}).`);
+  }
+  if (!res.ok) throw new Error(data.error || `Request failed (HTTP ${res.status}).`);
+  return data;
+}
+
 async function loadConfig() {
   try {
-    cfg = await (await fetch('/api/config')).json();
+    cfg = await fetchJson('/api/config');
   } catch { /* keep defaults */ }
   const perFile = humanSize(cfg.maxFileBytes);
   $('#limitHint').textContent = `Max ${perFile} per file · ${humanSize(cfg.maxUploadBytes)} total`;
@@ -88,9 +104,7 @@ async function submit() {
   btn.innerHTML = '<span class="spin"></span> Uploading…';
   $('#err').textContent = '';
   try {
-    const res = await fetch('/api/share', { method: 'POST', body: fd });
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.error || 'Upload failed');
+    const data = await fetchJson('/api/share', { method: 'POST', body: fd });
     showResult(data);
   } catch (e) {
     $('#err').textContent = e.message;

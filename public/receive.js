@@ -7,6 +7,21 @@ function humanSize(b) {
   return `${n.toFixed(n < 10 && i > 0 ? 1 : 0)} ${u[i]}`;
 }
 
+// Fetch + parse JSON, degrading gracefully when the server returns non-JSON
+// (e.g. a platform error page like "The deployment could not be found.").
+async function fetchJson(url, opts) {
+  const res = await fetch(url, opts);
+  const raw = await res.text();
+  let data, parsed = true;
+  try { data = raw ? JSON.parse(raw) : {}; } catch { parsed = false; }
+  if (!parsed) {
+    const snippet = raw.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 160);
+    throw new Error(snippet ? `Server: ${snippet}` : `Unexpected response (HTTP ${res.status}).`);
+  }
+  if (!res.ok) throw new Error(data.error || `Request failed (HTTP ${res.status}).`);
+  return data;
+}
+
 function fileUrl(f) {
   return `/api/download/${encodeURIComponent(current.id)}/${encodeURIComponent(f.id)}?token=${encodeURIComponent(current.downloadToken)}`;
 }
@@ -19,13 +34,11 @@ async function unlock() {
   btn.innerHTML = '<span class="spin"></span> Checking…';
   $('#err').textContent = '';
   try {
-    const res = await fetch('/api/verify', {
+    const data = await fetchJson('/api/verify', {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
       body: JSON.stringify({ code }),
     });
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.error || 'Could not unlock');
     current = data;
     render();
   } catch (e) {
