@@ -8,7 +8,7 @@ import { config, assertConfig, ROOT_DIR, IS_SERVERLESS } from './lib/config.js';
 import { getStore } from './lib/store/index.js';
 import { getStorage } from './lib/storage/index.js';
 import * as handlers from './lib/handlers.js';
-import { securityHeaders, sendJson, clientIp, readStreamBody } from './lib/http-helpers.js';
+import { securityHeaders, sendJson, clientIp, readRawBody } from './lib/http-helpers.js';
 
 const PUBLIC_DIR = path.join(ROOT_DIR, 'public');
 const MIME = {
@@ -39,7 +39,15 @@ function writeResult(res, result) {
 }
 
 // ---- router ----
-const server = http.createServer(async (req, res) => {
+// One async (req,res) handler, used two ways:
+//   • http.createServer(requestListener) for the persistent server, and
+//   • `export default` so a serverless platform (e.g. Vercel) that loads this
+//     module as a Serverless Function still finds a valid handler instead of
+//     failing with "No exports found … Did you forget to export a function?".
+// It uses readRawBody, so POST bodies work whether or not the runtime already
+// parsed them. On Vercel the dedicated functions in api/ normally handle these
+// routes; this is a correct fallback if traffic is ever routed here.
+export default async function requestListener(req, res) {
   securityHeaders(res);
   const url = new URL(req.url, `http://${req.headers.host || 'localhost'}`);
   const p = url.pathname;
@@ -60,11 +68,11 @@ const server = http.createServer(async (req, res) => {
     if (method === 'GET' && p === '/api/config') return sendJson(res, 200, handlers.configPayload());
 
     if (method === 'POST' && p === '/api/share') {
-      const bodyBuffer = await readStreamBody(req, config.maxUploadBytes + 2 * 1024 * 1024);
+      const bodyBuffer = await readRawBody(req, config.maxUploadBytes + 2 * 1024 * 1024);
       return writeResult(res, await handlers.handleShare({ contentType: req.headers['content-type'] || '', bodyBuffer, ip: clientIp(req) }));
     }
     if (method === 'POST' && p === '/api/verify') {
-      const bodyBuffer = await readStreamBody(req, 4096);
+      const bodyBuffer = await readRawBody(req, 4096);
       return writeResult(res, await handlers.handleVerify({ bodyBuffer, ip: clientIp(req) }));
     }
 
@@ -96,7 +104,9 @@ const server = http.createServer(async (req, res) => {
     if (!res.headersSent) sendJson(res, status, { error: err.message || 'Server error' });
     else res.destroy();
   }
-});
+}
+
+const server = http.createServer(requestListener);
 
 async function main() {
   const store = getStore();
