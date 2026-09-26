@@ -1,0 +1,16 @@
+# Files Vercel must NOT deploy. This app on Vercel = static public/ + api/ functions.
+# server.js is the PERSISTENT server (Render/Railway/Fly/VPS) — if Vercel uploads it,
+# its zero-config detection builds it as a catch-all function that hijacks "/" and
+# 404s (it can't read the static files), which is exactly the bug we hit. Exclude it
+# so Vercel serves public/index.html at "/" and runs the functions in api/.
+server.js
+
+# Dev-only / not needed by the serverless functions
+scripts/
+data/
+*.log
+
+# Never upload secrets (also gitignored)
+.env
+.env.local
+.env.*.local
