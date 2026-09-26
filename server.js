@@ -67,6 +67,15 @@ export default async function requestListener(req, res) {
     if (method === 'GET' && p === '/healthz') return sendJson(res, 200, { ok: true });
     if (method === 'GET' && p === '/api/config') return sendJson(res, 200, handlers.configPayload());
 
+    // Expiry sweep endpoint (Vercel Cron hits this; protected by CRON_SECRET when set).
+    if (method === 'GET' && p === '/api/cron/sweep') {
+      if (config.cronSecret && (req.headers['authorization'] || '') !== `Bearer ${config.cronSecret}`) {
+        return sendJson(res, 401, { error: 'Unauthorized' });
+      }
+      const { removed } = await handlers.runSweep();
+      return sendJson(res, 200, { ok: true, removed });
+    }
+
     if (method === 'POST' && p === '/api/share') {
       const bodyBuffer = await readRawBody(req, config.maxUploadBytes + 2 * 1024 * 1024);
       return writeResult(res, await handlers.handleShare({ contentType: req.headers['content-type'] || '', bodyBuffer, ip: clientIp(req) }));
