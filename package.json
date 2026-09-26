@@ -1,0 +1,13 @@
+{
+  "name": "mahesh-fs",
+  "version": "0.1.0",
+  "description": "Send files & text, share a one-time code, receiver downloads. Zero-dependency Node server with pluggable storage (local disk or Google Drive).",
+  "type": "module",
+  "engines": { "node": ">=18" },
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js",
+    "gdrive-auth": "node scripts/gdrive-auth.js"
+  },
+  "license": "MIT"
+}

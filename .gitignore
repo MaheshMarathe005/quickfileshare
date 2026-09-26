@@ -1,0 +1,29 @@
+node_modules/
+data/
+.env
+.env.local
+.env.*.local
+*.log
+.DS_Store
+
+# Vercel / build artifacts
+.vercel/
+
+# Source asset (already copied to public/logo.jpg)
+/360_F_2109205141_SGxd92aSUsSKMN4QRbsAIRlgcWrGsYBa.jpg
+
+# Editor / OS / tooling — not part of the app
+.idea
+.vscode
+.claude
+.mcp.json
+
+# Shell/user dotfiles that show up in this working dir (not project files)
+.bashrc
+.bash_profile
+.profile
+.zshrc
+.zprofile
+.gitconfig
+.gitmodules
+.ripgreprc

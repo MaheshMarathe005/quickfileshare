@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>mahesh_fs — Send files & text securely</title>
+  <link rel="icon" type="image/jpeg" href="/logo.jpg" />
+  <link rel="stylesheet" href="/app.css" />
+</head>
+<body>
+  <div class="wrap">
+    <header class="top">
+      <div class="brand"><img class="logo" src="/logo.jpg" alt="mahesh_fs logo" /> mahesh_fs</div>
+      <nav>
+        <a href="/" class="active">Send</a>
+        <a href="/r">Receive</a>
+      </nav>
+    </header>
+
+    <!-- Compose view -->
+    <section id="compose">
+      <h1>Send files &amp; a message</h1>
+      <p class="sub">Upload anything, get a one-time code. Only someone with the code can download.</p>
+
+      <div class="badges">
+        <span class="badge enc"><span class="ic">🔒</span> End-to-end encrypted</span>
+        <span class="badge"><span class="ic">📦</span> <span id="badgeSize">15 MB per file</span></span>
+        <span class="badge"><span class="ic">⏳</span> <span id="badgeTtl">Auto-deletes in 24h</span></span>
+      </div>
+
+      <div class="card">
+        <label for="text">Message (optional)</label>
+        <textarea id="text" rows="3" placeholder="Write a note to send along with your files..."></textarea>
+
+        <div id="drop" class="drop">
+          <span class="up-ic">📤</span>
+          <p><strong>Click to choose files</strong> or drag &amp; drop here</p>
+          <p class="meta" id="limitHint">Loading limits…</p>
+        </div>
+        <input id="fileInput" type="file" multiple hidden />
+        <ul id="fileList" class="filelist"></ul>
+
+        <button id="sendBtn" class="btn">🔐 Encrypt &amp; create code</button>
+        <div id="err" class="error"></div>
+      </div>
+      <p class="hint" id="ttlHint"></p>
+    </section>
+
+    <!-- Result view -->
+    <section id="result" hidden>
+      <div class="success-ring">
+        <svg viewBox="0 0 36 36"><path d="M10 18 l5 5 l11 -12" /></svg>
+      </div>
+      <h1 class="center">Share is ready</h1>
+      <p class="sub center">Give this code to the receiver. They enter it on the <a class="link" href="/r">Receive</a> page.</p>
+      <div class="card">
+        <div class="code-box">
+          <div class="code-label">Your one-time code</div>
+          <div class="code" id="codeOut">------</div>
+        </div>
+        <div class="copyrow">
+          <button class="btn" id="copyCode">📋 Copy code</button>
+          <button class="btn secondary" id="copyLink">Copy receive link</button>
+        </div>
+        <p class="hint" id="resultMeta"></p>
+      </div>
+      <button class="btn secondary" id="newShare" style="margin-top:16px">Send something else</button>
+    </section>
+  </div>
+  <script src="/send.js"></script>
+</body>
+</html>

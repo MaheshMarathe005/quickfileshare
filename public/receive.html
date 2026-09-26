@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>mahesh_fs — Receive files</title>
+  <link rel="icon" type="image/jpeg" href="/logo.jpg" />
+  <link rel="stylesheet" href="/app.css" />
+</head>
+<body>
+  <div class="wrap">
+    <header class="top">
+      <div class="brand"><img class="logo" src="/logo.jpg" alt="mahesh_fs logo" /> mahesh_fs</div>
+      <nav>
+        <a href="/">Send</a>
+        <a href="/r" class="active">Receive</a>
+      </nav>
+    </header>
+
+    <!-- Enter code -->
+    <section id="enter">
+      <h1>Enter your code</h1>
+      <p class="sub">Type the one-time code the sender gave you to unlock the files.</p>
+
+      <div class="badges">
+        <span class="badge enc"><span class="ic">🔒</span> Decrypted on delivery</span>
+        <span class="badge"><span class="ic">⏳</span> Codes expire fast</span>
+      </div>
+
+      <div class="card">
+        <label for="codeInput">Access code</label>
+        <input id="codeInput" class="otp-input" type="text" autocomplete="one-time-code" placeholder="K7P2-9XQM" />
+        <button id="unlockBtn" class="btn">🔓 Unlock files</button>
+        <div id="err" class="error"></div>
+      </div>
+    </section>
+
+    <!-- Files -->
+    <section id="files" hidden>
+      <div class="success-ring">
+        <svg viewBox="0 0 36 36"><path d="M10 18 l5 5 l11 -12" /></svg>
+      </div>
+      <h1 class="center">Files unlocked</h1>
+      <p class="sub center">Download your files below — this code may expire soon.</p>
+      <div class="card">
+        <div id="messageWrap" hidden>
+          <label>Message</label>
+          <div class="msg-block" id="messageOut"></div>
+        </div>
+        <ul id="recvList" class="filelist received-files"></ul>
+        <button id="dlAll" class="btn">⬇️ Download all</button>
+      </div>
+      <button class="btn secondary" id="another" style="margin-top:16px">Enter another code</button>
+    </section>
+  </div>
+  <script src="/receive.js"></script>
+</body>
+</html>
